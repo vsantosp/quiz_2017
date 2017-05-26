@@ -187,3 +187,77 @@ exports.check = function (req, res, next) {
         answer: answer
     });
 };
+
+// GET /quizzes/randomcheck/:quizId
+exports.randomcheck = function (req, res, next) {
+
+    var answer = req.query.answer || "";
+    //nos guardamos el valor de comparar el resultado con la solucion 
+    var result = answer.toLowerCase().trim() === req.quiz.answer.toLowerCase().trim();
+
+    //si el resultado es igual que la solucion sumamos uno al score
+    if (result) {
+        req.session.score =  req.session.score + 1;
+    }
+
+    //pasamos a la vista resultado el: score, si hemos acertado o no, y la respuesta 
+    res.render('quizzes/random_result', {
+        score: req.session.score,
+        result: result,
+        answer: answer
+    });
+};
+
+// GET /quizzes/randomplay
+exports.randomplay = function (req, res, next) {
+
+    //si no score lo iniciamos en 0
+
+    if (!req.session.questions || req.session.score == null){
+        req.session.score = 0;
+        req.session.questions = [-1];
+    }
+
+    var reiniciar = false;
+    var nuevos = [];
+    var idUsados = [];
+
+    // nos saca todas las preguntas que el id no este en questions
+    models.Quiz.count()
+    .then(function(count) {
+        return models.Quiz.findAll({
+            where: { id: { $notIn: req.session.questions } }
+        })
+
+    })
+    // nos saca el id asociado a la pregunta aleatoria extraida de quizzes
+    .then(function(quizzes) {
+        // si no hya quizzes finaliza
+        if (quizzes.length === 0){
+            //reinicia questions para reiniciar juego aleatorio
+            req.session.questions = 0;
+            res.render('quizzes/random_none', {
+                score: req.session.score
+            })
+        } else {
+            // numero aleatorio entre 1 y el numero de quizzes que hay
+            var numero = parseInt(Math.random() * quizzes.length);
+            // id de la pregunta en la posicion aleatoria
+        }
+        return quizzes[numero];
+    })
+    .then(function(quiz) {
+        if (quiz) {
+            req.session.questions.push(quiz.id);
+            res.render('quizzes/random_play', {
+                quiz: quiz,
+                score: req.session.score
+            });
+        }
+    })
+    .catch(function(error) {
+        req.flash('error', 'Error Juego Aleatorio: ' + error.message);
+        next(error);
+    });
+};
+
