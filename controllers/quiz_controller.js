@@ -198,7 +198,6 @@ exports.randomcheck = function (req, res, next) {
     //si el resultado es igual que la solucion sumamos uno al score
     if (result) {
         req.session.score =  req.session.score + 1;
-<<<<<<< HEAD
     } else {
     	req.session.score = 0;
     }
