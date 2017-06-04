@@ -201,6 +201,9 @@ exports.randomcheck = function (req, res, next) {
     } else {
     	req.session.score = 0;
     }
+    else {
+    	req.session.score = 0;
+    }
 
     //pasamos a la vista resultado el: score, si hemos acertado o no, y la respuesta 
     res.render('quizzes/random_result', {
